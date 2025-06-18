@@ -1,29 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
+#include "transformMacros.h"
 
 int main(int argc, char *argv[])
 {
     int i;
+    FILE *file;
 
-    /* Check if at least one filename is provided */
     if (argc < 2)
     {
-        fprintf(stderr, "Error: At least one filename must be provided\n");
-        fprintf(stderr, "Usage: %s <filename1> [filename2] ...\n", argv[0]);
+        fprintf(stderr, "Missing filename\n");
         return 1;
     }
 
-    /* Process each filename */
     for (i = 1; i < argc; i++)
     {
-        if (access(argv[i], F_OK) == 0)
+        char filename[FILE_NAME_LENGTH];
+        strcpy(filename, argv[i]);
+        strcat(filename, ".txt");
+
+        file = fopen(filename, "r");
+        if (file != NULL)
         {
-            printf("File '%s': SUCCESS - file exists\n", argv[i]);
+            printf("File '%s': SUCCESS - file read\n", argv[i]);
+            fclose(file);
         }
         else
         {
-            printf("File '%s': FAILURE - file does not exist\n", argv[i]);
+            printf("File '%s': FAILURE - cannot read file\n", argv[i]);
         }
     }
 

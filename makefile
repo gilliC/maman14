@@ -1,2 +1,3 @@
-assembler:  assembler.c
-	gcc -ansi -pedantic -Wall -g assembler.c -o assembler
+
+assembler:  assembler.c transformMacros.c assembler.h transformMacros.h
+	gcc -ansi -pedantic -Wall -g assembler.c transformMacros.c  -o assembler
