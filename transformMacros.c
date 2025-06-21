@@ -205,7 +205,6 @@ int transformMacros(char *filename, char errors[100][100])
 
     while (fgets(line, sizeof(line), input_file))
     {
-        printf("macro_name: %s\n", macro_name);
         if (validateLine(line, errors, &error_count) != 0)
         {
             result = 1;
@@ -246,8 +245,7 @@ int transformMacros(char *filename, char errors[100][100])
 
     if (result == 1)
     {
-        printf("Error!!!\n");
-        printf("error count: %d\n", error_count);
+        printf("Found %d errors while transforming macros\n", error_count);
         for (i = 0; i < error_count; i++)
         {
             printf("error[%d]: %s\n", i, errors[i]);
