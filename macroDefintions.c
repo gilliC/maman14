@@ -36,7 +36,6 @@ int createNewMacro(MacroList *list, char *name)
 
 int addCodeLine(MacroList *list, char *name, char *code)
 {
-    printf("addCodeLine: %s %s\n", name, code);
     char **temp;
     int i;
     char *trimmed_code = getTrimmedLine(code);
@@ -60,9 +59,6 @@ int addCodeLine(MacroList *list, char *name, char *code)
             }
             strcpy(list->macros[i].code[list->macros[i].codeCount], trimmed_code);
             list->macros[i].codeCount++;
-            printf("addCodeLine: %s %s\n", name, code);
-            printf("list->macros[i].codeCount: %d\n", list->macros[i].codeCount);
-
             return 0;
         }
     }
@@ -73,14 +69,24 @@ int addCodeLine(MacroList *list, char *name, char *code)
 char **getCodeByName(MacroList *list, char *name)
 {
     int i;
+    char *trimmed_name = getStringCleaned(name);
+    char **result = NULL;
+
+    if (trimmed_name == NULL)
+    {
+        return NULL;
+    }
+
     for (i = 0; i < list->count; i++)
     {
-        if (strcmp(list->macros[i].name, name) == 0)
+        if (strcmp(list->macros[i].name, trimmed_name) == 0)
         {
-            return list->macros[i].code;
+            result = list->macros[i].code;
+            printf("result count: %d\n", list->macros[i].codeCount);
+            break;
         }
     }
-    return NULL;
+    return result;
 }
 
 int onFinish(MacroList *list)

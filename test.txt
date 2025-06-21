@@ -5,3 +5,6 @@ mcro mc_a
 mcroend
 This is a test file 2
 mc_a
+This is a test file 3
+mc_a
+end

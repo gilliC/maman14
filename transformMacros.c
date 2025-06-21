@@ -51,15 +51,16 @@ int isMacroEnd(char *line)
 int isValidMacroName(char *name)
 {
     int i;
+    char *trimmed_name = getStringCleaned(name);
 
     if (name == NULL || name[0] == '\0')
     {
         return 0;
     }
 
-    for (i = 0; name[i] != '\0'; i++)
+    for (i = 0; trimmed_name[i] != '\0'; i++)
     {
-        if (!((name[i] >= 'a' && name[i] <= 'z') || name[i] == '_'))
+        if (!((trimmed_name[i] >= 'a' && trimmed_name[i] <= 'z') || trimmed_name[i] == '_'))
         {
             return 0;
         }
@@ -79,35 +80,30 @@ int validateLine(char *line, char errors[100][100], int *error_count)
     return 0;
 }
 
-int handleInsideMacro(char *line, char errors[100][100], int *error_count, MacroList *macro_list, char *current_macro_name, int *inside_macro)
+int handleInsideMacro(char *line, char errors[100][100], int *error_count, MacroList *macro_list, int *inside_macro, char *macro_name)
 {
-    printf("handleInsideMacro: %s\n", line);
     if (isMacroEnd(line) == 0)
     {
-        printf("isMacroEnd: %s\n", line);
         *inside_macro = 0;
     }
     else
     {
-        if (addCodeLine(macro_list, current_macro_name, line) != 0)
+        if (addCodeLine(macro_list, macro_name, line) != 0)
         {
-            sprintf(errors[*error_count], "Failed to add code line to macro '%s'", current_macro_name);
+            sprintf(errors[*error_count], "Failed to add code line to macro '%s'", macro_name);
             (*error_count)++;
             return 1;
         }
-        printf("addCodeLine success: %s %s\n", current_macro_name, line);
     }
     return 0;
 }
 
-int handleMacroDefinition(char *line, char errors[100][100], int *error_count, MacroList *macro_list, char *current_macro_name, int *inside_macro, char *macro_name)
+int handleMacroDefinition(char *line, char errors[100][100], int *error_count, MacroList *macro_list, int *inside_macro, char *macro_name)
 {
     if (isValidMacroName(macro_name))
     {
         if (createNewMacro(macro_list, macro_name) == 0)
         {
-            printf("Macro '%s' created %s\n", macro_name, line);
-            strcpy(current_macro_name, macro_name);
             *inside_macro = 1;
         }
         else
@@ -126,7 +122,7 @@ int handleMacroDefinition(char *line, char errors[100][100], int *error_count, M
     return 0;
 }
 
-int isMacroName(char *line, MacroList *macro_list)
+int shouldWriteMacroCode(char *line, MacroList *macro_list)
 {
     if (getCodeByName(macro_list, line) != NULL)
     {
@@ -135,7 +131,7 @@ int isMacroName(char *line, MacroList *macro_list)
     return 1;
 }
 
-int handleMacroName(char *line, char errors[100][100], int *error_count, MacroList *macro_list, FILE *output_file)
+int writeMacroCode(char *line, char errors[100][100], int *error_count, MacroList *macro_list, FILE *output_file)
 {
     int i;
     char **codeList = getCodeByName(macro_list, line);
@@ -143,7 +139,10 @@ int handleMacroName(char *line, char errors[100][100], int *error_count, MacroLi
     {
         for (i = 0; codeList[i] != NULL; i++)
         {
-            fputs(codeList[i], output_file);
+            if (codeList[i] != NULL && codeList[i][0] != '\0')
+            {
+                writeInFile(codeList[i], output_file);
+            }
         }
         return 0;
     }
@@ -168,9 +167,9 @@ int transformMacros(char *filename, char errors[100][100])
     /* todo - make this dynamic and no hardocded values*/
     /*  char errors[100][100]; */
     char macro_name[LINE_LENGTH - MACRO_NAME_DEFINITION_LENGTH];
-    char current_macro_name[LINE_LENGTH - MACRO_NAME_DEFINITION_LENGTH];
     int inside_macro = 0;
     MacroList *macro_list;
+    int i;
 
     macro_list = createMacroList();
     if (macro_list == NULL)
@@ -206,7 +205,7 @@ int transformMacros(char *filename, char errors[100][100])
 
     while (fgets(line, sizeof(line), input_file))
     {
-        printf("line: %s\n", line);
+        printf("macro_name: %s\n", macro_name);
         if (validateLine(line, errors, &error_count) != 0)
         {
             result = 1;
@@ -214,15 +213,14 @@ int transformMacros(char *filename, char errors[100][100])
         /* if inside macro, add code line to macro */
         else if (inside_macro != 0)
         {
-            printf("inside_macro: %d\n", inside_macro);
-            if (handleInsideMacro(line, errors, &error_count, macro_list, current_macro_name, &inside_macro) != 0)
+            if (handleInsideMacro(line, errors, &error_count, macro_list, &inside_macro, macro_name) != 0)
             {
                 result = 1;
             }
         }
-        else if (isMacroName(line, macro_list) == 0)
+        else if (shouldWriteMacroCode(line, macro_list) == 0)
         {
-            if (handleMacroName(line, errors, &error_count, macro_list, output_file) != 0)
+            if (writeMacroCode(line, errors, &error_count, macro_list, output_file) != 0)
             {
                 result = 1;
             }
@@ -230,14 +228,14 @@ int transformMacros(char *filename, char errors[100][100])
         /* if macro definition, create new macro */
         else if (isMacroDefinition(line, macro_name) == 0)
         {
-            if (handleMacroDefinition(line, errors, &error_count, macro_list, current_macro_name, &inside_macro, macro_name) != 0)
+            if (handleMacroDefinition(line, errors, &error_count, macro_list, &inside_macro, macro_name) != 0)
             {
                 result = 1;
             }
         }
         else
         {
-            fputs(line, output_file);
+            writeInFile(line, output_file);
         }
     }
 
@@ -248,6 +246,12 @@ int transformMacros(char *filename, char errors[100][100])
 
     if (result == 1)
     {
+        printf("Error!!!\n");
+        printf("error count: %d\n", error_count);
+        for (i = 0; i < error_count; i++)
+        {
+            printf("error[%d]: %s\n", i, errors[i]);
+        }
         remove(output_filename);
     }
 
