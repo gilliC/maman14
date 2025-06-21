@@ -12,7 +12,7 @@ typedef struct
 } MacroList;
 
 MacroList *createMacroList(void);
-int createNewMacro(MacroList *list, const char *name);
-int addCodeLine(MacroList *list, const char *name, const char *code);
-char **getCodeByName(MacroList *list, const char *name);
+int createNewMacro(MacroList *list, char *name);
+int addCodeLine(MacroList *list, char *name, char *code);
+char **getCodeByName(MacroList *list, char *name);
 int onFinish(MacroList *list);

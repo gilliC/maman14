@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "macroDefintions.h"
+#include "utils.h"
 
 MacroList *createMacroList(void)
 {
@@ -11,7 +12,7 @@ MacroList *createMacroList(void)
     return list;
 }
 
-int createNewMacro(MacroList *list, const char *name)
+int createNewMacro(MacroList *list, char *name)
 {
     Macro *temp = realloc(list->macros, (list->count + 1) * sizeof(Macro));
     if (temp == NULL)
@@ -33,11 +34,12 @@ int createNewMacro(MacroList *list, const char *name)
     return 0;
 }
 
-int addCodeLine(MacroList *list, const char *name, const char *code)
+int addCodeLine(MacroList *list, char *name, char *code)
 {
     printf("addCodeLine: %s %s\n", name, code);
     char **temp;
     int i;
+    char *trimmed_code = getTrimmedLine(code);
     for (i = 0; i < list->count; i++)
     {
         if (strcmp(list->macros[i].name, name) == 0)
@@ -50,13 +52,13 @@ int addCodeLine(MacroList *list, const char *name, const char *code)
             }
             list->macros[i].code = temp;
 
-            list->macros[i].code[list->macros[i].codeCount] = malloc(strlen(code) + 1);
+            list->macros[i].code[list->macros[i].codeCount] = malloc(strlen(trimmed_code) + 1);
             if (list->macros[i].code[list->macros[i].codeCount] == NULL)
             {
                 fprintf(stderr, "Memory allocation failed for code line in macro '%s'\n", name);
                 return 1;
             }
-            strcpy(list->macros[i].code[list->macros[i].codeCount], code);
+            strcpy(list->macros[i].code[list->macros[i].codeCount], trimmed_code);
             list->macros[i].codeCount++;
             printf("addCodeLine: %s %s\n", name, code);
             printf("list->macros[i].codeCount: %d\n", list->macros[i].codeCount);
@@ -68,7 +70,7 @@ int addCodeLine(MacroList *list, const char *name, const char *code)
     return 1;
 }
 
-char **getCodeByName(MacroList *list, const char *name)
+char **getCodeByName(MacroList *list, char *name)
 {
     int i;
     for (i = 0; i < list->count; i++)
