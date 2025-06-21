@@ -1,8 +1,0 @@
-This is a test file 1
-This is a test file 2
-inc r2
-mov A,r1
-This is a test file 3
-inc r2
-mov A,r1
-end

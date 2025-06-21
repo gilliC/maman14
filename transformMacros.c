@@ -124,7 +124,8 @@ int handleMacroDefinition(char *line, char errors[100][100], int *error_count, M
 
 int shouldWriteMacroCode(char *line, MacroList *macro_list)
 {
-    if (getCodeByName(macro_list, line) != NULL)
+    int codeCount;
+    if (getCodeByName(macro_list, line, &codeCount) != NULL && codeCount > 0)
     {
         return 0;
     }
@@ -134,11 +135,13 @@ int shouldWriteMacroCode(char *line, MacroList *macro_list)
 int writeMacroCode(char *line, char errors[100][100], int *error_count, MacroList *macro_list, FILE *output_file)
 {
     int i;
-    char **codeList = getCodeByName(macro_list, line);
+    int codeCount;
+    char **codeList = getCodeByName(macro_list, line, &codeCount);
     if (codeList != NULL)
     {
-        for (i = 0; codeList[i] != NULL; i++)
+        for (i = 0; i < codeCount; i++)
         {
+            printf("codeCount - %d (%d)\n", i, codeCount);
             if (codeList[i] != NULL && codeList[i][0] != '\0')
             {
                 writeInFile(codeList[i], output_file);

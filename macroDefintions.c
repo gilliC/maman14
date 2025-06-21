@@ -66,7 +66,7 @@ int addCodeLine(MacroList *list, char *name, char *code)
     return 1;
 }
 
-char **getCodeByName(MacroList *list, char *name)
+char **getCodeByName(MacroList *list, char *name, int *codeCount)
 {
     int i;
     char *trimmed_name = getStringCleaned(name);
@@ -82,7 +82,7 @@ char **getCodeByName(MacroList *list, char *name)
         if (strcmp(list->macros[i].name, trimmed_name) == 0)
         {
             result = list->macros[i].code;
-            printf("result count: %d\n", list->macros[i].codeCount);
+            *codeCount = list->macros[i].codeCount;
             break;
         }
     }

@@ -14,5 +14,5 @@ typedef struct
 MacroList *createMacroList(void);
 int createNewMacro(MacroList *list, char *name);
 int addCodeLine(MacroList *list, char *name, char *code);
-char **getCodeByName(MacroList *list, char *name);
+char **getCodeByName(MacroList *list, char *name, int *codeCount);
 int onFinish(MacroList *list);
