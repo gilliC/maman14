@@ -1,0 +1,7 @@
+This is a test file 1
+mcro mc_a
+ inc r2
+ mov A,r1
+mcroend
+This is a test file 2
+mc_a

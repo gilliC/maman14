@@ -1,3 +1,2 @@
-
-assembler:  assembler.c transformMacros.c assembler.h transformMacros.h
-	gcc -ansi -pedantic -Wall -g assembler.c transformMacros.c  -o assembler
+assembler:  assembler.c transformMacros.c macroDefintions.c assembler.h transformMacros.h macroDefintions.h utils.c utils.h
+	gcc -ansi -pedantic -Wall -g -arch x86_64 assembler.c transformMacros.c macroDefintions.c utils.c -o assembler

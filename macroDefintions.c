@@ -3,7 +3,7 @@
 #include <string.h>
 #include "macroDefintions.h"
 
-MacroList *createMacroList()
+MacroList *createMacroList(void)
 {
     MacroList *list = malloc(sizeof(MacroList));
     list->macros = NULL;
@@ -11,56 +11,96 @@ MacroList *createMacroList()
     return list;
 }
 
-void createNewMacro(MacroList *list, const char *name)
+int createNewMacro(MacroList *list, const char *name)
 {
-    list->macros = realloc(list->macros, (list->count + 1) * sizeof(Macro));
+    Macro *temp = realloc(list->macros, (list->count + 1) * sizeof(Macro));
+    if (temp == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed for macro '%s'\n", name);
+        return 1;
+    }
+    list->macros = temp;
     list->macros[list->count].name = malloc(strlen(name) + 1);
+    if (list->macros[list->count].name == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed for macro name '%s'\n", name);
+        return 1;
+    }
     strcpy(list->macros[list->count].name, name);
     list->macros[list->count].code = NULL;
     list->macros[list->count].codeCount = 0;
     list->count++;
+    return 0;
 }
 
-void addCodeLine(MacroList *list, const char *name, const char *code)
+int addCodeLine(MacroList *list, const char *name, const char *code)
 {
-    for (int i = 0; i < list->count; i++)
+    printf("addCodeLine: %s %s\n", name, code);
+    char **temp;
+    int i;
+    for (i = 0; i < list->count; i++)
     {
         if (strcmp(list->macros[i].name, name) == 0)
         {
-            list->macros[i].code = realloc(list->macros[i].code, (list->macros[i].codeCount + 1) * sizeof(char *));
+            temp = realloc(list->macros[i].code, (list->macros[i].codeCount + 1) * sizeof(char *));
+            if (temp == NULL)
+            {
+                fprintf(stderr, "Memory allocation failed for code line in macro '%s'\n", name);
+                return 1;
+            }
+            list->macros[i].code = temp;
+
             list->macros[i].code[list->macros[i].codeCount] = malloc(strlen(code) + 1);
+            if (list->macros[i].code[list->macros[i].codeCount] == NULL)
+            {
+                fprintf(stderr, "Memory allocation failed for code line in macro '%s'\n", name);
+                return 1;
+            }
             strcpy(list->macros[i].code[list->macros[i].codeCount], code);
             list->macros[i].codeCount++;
-            return;
+            printf("addCodeLine: %s %s\n", name, code);
+            printf("list->macros[i].codeCount: %d\n", list->macros[i].codeCount);
+
+            return 0;
         }
     }
+    fprintf(stderr, "Macro '%s' not found\n", name);
+    return 1;
 }
 
-char **getCodeByName(MacroList *list, const char *name, int *count)
+char **getCodeByName(MacroList *list, const char *name)
 {
-    for (int i = 0; i < list->count; i++)
+    int i;
+    for (i = 0; i < list->count; i++)
     {
         if (strcmp(list->macros[i].name, name) == 0)
         {
-            *count = list->macros[i].codeCount;
             return list->macros[i].code;
         }
     }
-    *count = 0;
     return NULL;
 }
 
-void freeMacroList(MacroList *list)
+int onFinish(MacroList *list)
 {
-    for (int i = 0; i < list->count; i++)
+    int i, j;
+    if (list == NULL)
+    {
+        return 1;
+    }
+
+    for (i = 0; i < list->count; i++)
     {
         free(list->macros[i].name);
-        for (int j = 0; j < list->macros[i].codeCount; j++)
+
+        for (j = 0; j < list->macros[i].codeCount; j++)
         {
             free(list->macros[i].code[j]);
         }
+
         free(list->macros[i].code);
     }
     free(list->macros);
     free(list);
+    return 0;
 }

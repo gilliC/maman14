@@ -11,8 +11,8 @@ typedef struct
     int count;
 } MacroList;
 
-MacroList *createMacroList();
-void createNewMacro(MacroList *list, const char *name);
-void addCodeLine(MacroList *list, const char *name, const char *code);
-char **getCodeByName(MacroList *list, const char *name, int *count);
-void freeMacroList(MacroList *list);
+MacroList *createMacroList(void);
+int createNewMacro(MacroList *list, const char *name);
+int addCodeLine(MacroList *list, const char *name, const char *code);
+char **getCodeByName(MacroList *list, const char *name);
+int onFinish(MacroList *list);
